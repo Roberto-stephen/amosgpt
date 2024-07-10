@@ -1,7 +1,6 @@
 const express = require('express');
 const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require('@google/generative-ai');
 const dotenv = require('dotenv').config();
-const mysql = require('mysql2/promise'); // Library untuk MySQL
 const path = require('path');
 
 const app = express();
@@ -11,16 +10,6 @@ app.use(express.urlencoded({ extended: true })); // to support URL-encoded bodie
 
 const MODEL_NAME = "gemini-pro";
 const API_KEY = process.env.API_KEY;
-
-// Fungsi untuk membuat koneksi ke database
-async function createDBConnection() {
-  return await mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-  });
-}
 
 // Dummy data for user validation
 const users = {
@@ -114,7 +103,6 @@ app.post('/login', (req, res) => {
   }
 });
 
-
 // Route untuk menghandle request ke /chat
 app.post('/chat', async (req, res) => {
   try {
@@ -125,11 +113,6 @@ app.post('/chat', async (req, res) => {
     }
 
     const response = await runChat(userInput);
-
-    // Simpan input dan respons ke database
-    const dbConnection = await createDBConnection();
-    await dbConnection.execute('INSERT INTO chat_log (user_input, response) VALUES (?, ?)', [userInput, response]);
-
     res.json({ response });
   } catch (error) {
     console.error('Error in chat endpoint:', error);
